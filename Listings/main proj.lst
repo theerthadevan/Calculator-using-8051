@@ -1,0 +1,437 @@
+C51 COMPILER V9.60.7.0   MAIN_PROJ                                                         06/07/2023 21:51:21 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN_PROJ
+OBJECT MODULE PLACED IN .\Objects\main proj.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main proj.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings
+                    -\main proj.lst) TABS(2) OBJECT(.\Objects\main proj.obj)
+
+line level    source
+
+   1          #include<reg51.h>
+   2          
+   3          #define lcd P2
+   4          
+   5          sbit rs = P3^0;
+   6          sbit rw = P3^1;
+   7          sbit en = P3^2;
+   8          
+   9          void lcd_init();
+  10          void lcd_cmd(unsigned char);
+  11          void lcd_dat(unsigned char);
+  12          void msdelay(unsigned char);
+  13          void lcd_string(unsigned char *);
+  14          
+  15          //lcd initialization
+  16          
+  17          void lcd_init()
+  18          {
+  19   1        lcd_cmd(0x80);
+  20   1        lcd_cmd(0x38);
+  21   1        lcd_cmd(0x01);
+  22   1        lcd_cmd(0x0c);
+  23   1        lcd_cmd(0x06);
+  24   1      }
+  25          
+  26          // send commands
+  27          
+  28          void lcd_cmd(unsigned char ch)
+  29          {
+  30   1        lcd = ch;
+  31   1        rs = 0;
+  32   1        rw = 0;
+  33   1        en = 1;
+  34   1        msdelay(20);
+  35   1        en = 0;
+  36   1        
+  37   1      }
+  38          
+  39          // send data
+  40          
+  41          void lcd_dat(unsigned char ch)
+  42          {
+  43   1        lcd = ch;
+  44   1        rs = 1;
+  45   1        rw = 0;
+  46   1        en = 1;
+  47   1        msdelay(20);
+  48   1        en = 0;
+  49   1      }
+  50          
+  51          // delay
+  52          
+  53          void msdelay(unsigned char t)
+  54          {
+C51 COMPILER V9.60.7.0   MAIN_PROJ                                                         06/07/2023 21:51:21 PAGE 2   
+
+  55   1        unsigned int i, j;
+  56   1        for(i = 0; i < t; i++)
+  57   1        {
+  58   2        for(j = 0; j < 5000; j++);
+  59   2        }
+  60   1      }
+  61          
+  62          
+  63          
+  64          
+  65          // send a string of data
+  66          
+  67          void lcd_string(unsigned char *p)
+  68          {
+  69   1        while(*p != '\0')
+  70   1        {
+  71   2          lcd_dat(*p);
+  72   2          p++;
+  73   2        }
+  74   1      }
+  75          
+  76          sbit r1 = P1^0;
+  77          sbit r2 = P1^1;
+  78          sbit r3 = P1^2;
+  79          sbit r4 = P1^3;
+  80          sbit c1 = P1^4;
+  81          sbit c2 = P1^5;
+  82          sbit c3 = P1^6;
+  83          sbit c4 = P1^7;
+  84          void row_scan();
+  85          void delay(unsigned char);
+  86          void send_num(unsigned int);
+  87          void calculate();
+  88          unsigned int y, a = 0, b = 0;
+  89          unsigned char operator, flag = 0;
+  90          
+  91          void main()
+  92          {
+  93   1          P1 = 0xf0; // To make rows as output and columns as input pins
+  94   1          lcd_init();
+  95   1          lcd_cmd(0x85);
+  96   1          lcd_string("SIMPLE");
+  97   1          lcd_cmd(0xc3);
+  98   1          lcd_string("CALCULATOR");
+  99   1          delay(200);
+ 100   1          lcd_cmd(0x01);
+ 101   1          while(1)
+ 102   1          {
+ 103   2              row_scan();
+ 104   2          }
+ 105   1      }
+ 106          
+ 107          void row_scan()
+ 108          {
+ 109   1          //---ROW 1---//
+ 110   1          r1 = 0;
+ 111   1          r2 = r3 = r4 = 1;
+ 112   1          if(c1 == 0)
+ 113   1          {
+ 114   2              delay(32);
+ 115   2              while(c1 == 0)
+ 116   2              {
+C51 COMPILER V9.60.7.0   MAIN_PROJ                                                         06/07/2023 21:51:21 PAGE 3   
+
+ 117   3                  lcd_dat('1');
+ 118   3                  if(flag == 0)
+ 119   3                      a = a*10 + 1;
+ 120   3                  else
+ 121   3                      b = b*10 + 1;
+ 122   3              }
+ 123   2          }
+ 124   1          if(c2 == 0)
+ 125   1          {
+ 126   2              delay(32);
+ 127   2              while(c2 == 0)
+ 128   2              {
+ 129   3                  lcd_dat('2');
+ 130   3                  if(flag == 0)
+ 131   3                      a = a*10 + 2;
+ 132   3                  else
+ 133   3                      b = b*10 + 2;
+ 134   3              }
+ 135   2          }
+ 136   1          if(c3 == 0)
+ 137   1          {
+ 138   2              delay(32);
+ 139   2              while(c3 == 0)
+ 140   2              {
+ 141   3                  lcd_dat('3');
+ 142   3                  if(flag == 0)
+ 143   3                      a = a*10 + 3;
+ 144   3                  else
+ 145   3                      b = b*10 + 3;
+ 146   3              }
+ 147   2          }
+ 148   1          if(c4 == 0)
+ 149   1          {
+ 150   2              delay(32);
+ 151   2              while(c4 == 0)
+ 152   2              {
+ 153   3                  flag = 1;
+ 154   3                  lcd_dat('+');
+ 155   3                  operator = '+';
+ 156   3              }
+ 157   2          }
+ 158   1      
+ 159   1          //---ROW 2---//
+ 160   1          r2 = 0;
+ 161   1          r1 = r3 = r4 = 1;
+ 162   1          if(c1 == 0)
+ 163   1          {
+ 164   2              delay(32);
+ 165   2              while(c1 == 0)
+ 166   2              {
+ 167   3                  lcd_dat('4');
+ 168   3                  if(flag == 0)
+ 169   3                      a = a*10 + 4;
+ 170   3                  else
+ 171   3                      b = b*10 + 4;
+ 172   3              }
+ 173   2          }
+ 174   1          if(c2 == 0)
+ 175   1          {
+ 176   2              delay(32);
+ 177   2              while(c2 == 0)
+ 178   2              {
+C51 COMPILER V9.60.7.0   MAIN_PROJ                                                         06/07/2023 21:51:21 PAGE 4   
+
+ 179   3                  lcd_dat('5');
+ 180   3                  if(flag == 0)
+ 181   3                      a = a*10 + 5;
+ 182   3                  else
+ 183   3                      b = b*10 + 5;
+ 184   3              }
+ 185   2          }
+ 186   1          if(c3 == 0)
+ 187   1          {
+ 188   2              delay(32);
+ 189   2              while(c3 == 0)
+ 190   2              {
+ 191   3                  lcd_dat('6');
+ 192   3                  if(flag == 0)
+ 193   3                      a = a*10 + 6;
+ 194   3                  else
+ 195   3                      b = b*10 + 6;
+ 196   3              }
+ 197   2          }
+ 198   1          if(c4 == 0)
+ 199   1          {
+ 200   2              delay(32);
+ 201   2              while(c4 == 0)
+ 202   2              {
+ 203   3                  flag = 1;
+ 204   3                  lcd_dat('-');
+ 205   3                  operator = '-';
+ 206   3              }
+ 207   2          }
+ 208   1      
+ 209   1          //---ROW 3---//
+ 210   1          r3 = 0;
+ 211   1          r2 = r1 = r4 = 1;
+ 212   1          if(c1 == 0)
+ 213   1          {
+ 214   2              delay(32);
+ 215   2              while(c1 == 0)
+ 216   2              {
+ 217   3                  lcd_dat('7');
+ 218   3                  if(flag == 0)
+ 219   3                      a = a*10 + 7;
+ 220   3                  else
+ 221   3                      b = b*10 + 7;
+ 222   3              }
+ 223   2          }
+ 224   1          if(c2 == 0)
+ 225   1          {
+ 226   2              delay(32);
+ 227   2              while(c2 == 0)
+ 228   2              {
+ 229   3                  lcd_dat('8');
+ 230   3                  if(flag == 0)
+ 231   3                      a = a*10 + 8;
+ 232   3                  else
+ 233   3                      b = b*10 + 8;
+ 234   3              }
+ 235   2          }
+ 236   1          if(c3 == 0)
+ 237   1          {
+ 238   2              delay(32);
+ 239   2              while(c3 == 0)
+ 240   2              {
+C51 COMPILER V9.60.7.0   MAIN_PROJ                                                         06/07/2023 21:51:21 PAGE 5   
+
+ 241   3                  lcd_dat('9');
+ 242   3                  if(flag == 0)
+ 243   3                      a = a*10 + 9;
+ 244   3                  else
+ 245   3                      b = b*10 + 9;
+ 246   3              }
+ 247   2          }
+ 248   1          if(c4 == 0)
+ 249   1          {
+ 250   2              delay(32);
+ 251   2              while(c4 == 0)
+ 252   2              {
+ 253   3                  flag = 1;
+ 254   3                  lcd_dat('/');
+ 255   3                  operator = '/';
+ 256   3              }
+ 257   2          }
+ 258   1      
+ 259   1          //---ROW 4---//
+ 260   1          r4 = 0;
+ 261   1          r2 = r3 = r1 = 1;
+ 262   1          if(c1 == 0)
+ 263   1          {
+ 264   2              delay(32);
+ 265   2              while(c1 == 0)
+ 266   2              {
+ 267   3                  lcd_cmd(0x01);
+ 268   3                  flag = a = b = 0;
+ 269   3              }
+ 270   2          }
+ 271   1          if(c2 == 0)
+ 272   1          {
+ 273   2              delay(32);
+ 274   2              while(c2 == 0)
+ 275   2              {
+ 276   3                  lcd_dat('0');
+ 277   3                  if(flag == 0)
+ 278   3                      a = a*10 + 0;
+ 279   3                  else
+ 280   3                      b = b*10 + 0;
+ 281   3              }
+ 282   2          }
+ 283   1          if(c3 == 0)
+ 284   1          {
+ 285   2              delay(32);
+ 286   2              while(c3 == 0)
+ 287   2              {
+ 288   3                  lcd_dat('=');
+ 289   3                  calculate();
+ 290   3              }
+ 291   2          }
+ 292   1          if(c4 == 0)
+ 293   1          {
+ 294   2              delay(32);
+ 295   2              while(c4 == 0)
+ 296   2              {
+ 297   3                  flag = 1;
+ 298   3                  lcd_dat('*');
+ 299   3                  operator = '*';
+ 300   3              }
+ 301   2          }
+ 302   1      }
+C51 COMPILER V9.60.7.0   MAIN_PROJ                                                         06/07/2023 21:51:21 PAGE 6   
+
+ 303          
+ 304          void delay(unsigned char t)
+ 305          {
+ 306   1          unsigned int j;
+ 307   1          unsigned char i;
+ 308   1          for(i = 0; i < t; i++)
+ 309   1              for(j = 0; j < 1500; j++);
+ 310   1      }
+ 311          
+ 312          
+ 313          void calculate()
+ 314          {
+ 315   1          lcd_cmd(0xc0);
+ 316   1          if(operator == '+')
+ 317   1          {
+ 318   2              send_num(a + b);
+ 319   2          }
+ 320   1      
+ 321   1          if(operator == '-')
+ 322   1          {
+ 323   2              if(a > b)
+ 324   2                  send_num(a - b);
+ 325   2              else
+ 326   2              {
+ 327   3                  lcd_dat('-');
+ 328   3                  send_num(b - a);
+ 329   3              }
+ 330   2          }
+ 331   1      
+ 332   1          if(operator == '/')
+ 333   1          {
+ 334   2              if(b != 0)
+ 335   2                  send_num(a/b);
+ 336   2              else
+ 337   2              {
+ 338   3                  lcd_cmd(0x01);
+ 339   3                  lcd_string("Math Error");
+ 340   3              }
+ 341   2          }
+ 342   1      
+ 343   1          if(operator == 'x')
+ 344   1          {
+ 345   2              send_num(a*b);
+ 346   2          }
+ 347   1      }
+ 348          
+ 349          void send_num(unsigned int x)
+ 350          {
+ 351   1          if(x > 9999)
+ 352   1          {
+ 353   2              y = x/10000;
+ 354   2              lcd_dat(y + 0x30);
+ 355   2              x = x%10000;
+ 356   2              y = x/1000;
+ 357   2              lcd_dat(y + 0x30);
+ 358   2              x = x%1000;
+ 359   2              y = x/100;
+ 360   2              lcd_dat(y + 0x30);
+ 361   2              x = x%100;
+ 362   2              y = x/10;
+ 363   2              lcd_dat(y + 0x30);
+ 364   2              y = x%10;
+C51 COMPILER V9.60.7.0   MAIN_PROJ                                                         06/07/2023 21:51:21 PAGE 7   
+
+ 365   2              lcd_dat(y + 0x30);
+ 366   2          }
+ 367   1          else if(x > 999 && x < 9999)
+ 368   1          {
+ 369   2              y = x/1000;
+ 370   2              lcd_dat(y + 0x30);
+ 371   2              x = x%1000;
+ 372   2              y = x/100;
+ 373   2              lcd_dat(y + 0x30);
+ 374   2              x = x%100;
+ 375   2              y = x/10;
+ 376   2              lcd_dat(y + 0x30);
+ 377   2              y = x%10;
+ 378   2              lcd_dat(y + 0x30);
+ 379   2          }
+ 380   1          else if(x > 99 && x < 999)
+ 381   1          {
+ 382   2              y = x/100;
+ 383   2              lcd_dat(y + 0x30);
+ 384   2              x = x%100;
+ 385   2              y = x/10;
+ 386   2              lcd_dat(y + 0x30);
+ 387   2              y = x%10;
+ 388   2              lcd_dat(y + 0x30);
+ 389   2          }
+ 390   1          else if(x > 9 && x < 99)
+ 391   1          {
+ 392   2              y = x/10;
+ 393   2              lcd_dat(y + 0x30);
+ 394   2              y = x%10;
+ 395   2              lcd_dat(y + 0x30);
+ 396   2          }
+ 397   1          else
+ 398   1          {
+ 399   2              lcd_dat(x + 0x30);
+ 400   2          }
+ 401   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1326    ----
+   CONSTANT SIZE    =     29    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      8       5
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
